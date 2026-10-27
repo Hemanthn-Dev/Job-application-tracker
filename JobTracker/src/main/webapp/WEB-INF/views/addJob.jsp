@@ -14,6 +14,7 @@
             <h2>Add New Job Application</h2>
             <c:if test="${not empty error}"><p role="alert">${error}</p></c:if>
             <form id="jobForm" action="${pageContext.request.contextPath}/jobs/add" method="post">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
                 <div class="form-group">
                     <label for="company">Company Name</label>
                     <input id="company" type="text" name="company" value="${job.company}" maxlength="150" required>
