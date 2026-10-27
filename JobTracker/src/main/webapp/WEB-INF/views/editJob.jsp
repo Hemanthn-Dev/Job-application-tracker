@@ -13,6 +13,7 @@
         <h2>Edit Job Application</h2>
         <c:if test="${not empty error}"><p role="alert">${error}</p></c:if>
         <form action="${pageContext.request.contextPath}/jobs/update/${job.id}" method="post" class="job-form">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
             <label for="company">Company</label>
             <input type="text" id="company" name="company" value="${job.company}" maxlength="150" required>
             <label for="position">Position</label>
