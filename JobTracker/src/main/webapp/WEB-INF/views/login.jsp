@@ -5,6 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" content="${_csrf.token}">
+    <meta name="_csrf_header" content="${_csrf.headerName}">
     <title>Login - Job Application Tracker</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/user.css">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,6 +24,7 @@
             </div>
 
             <form action="<%= request.getContextPath() %>/auth/login" method="post" class="auth-form">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <div class="input-icon-wrapper">
