@@ -29,7 +29,7 @@
 
                     <c:if test="${not empty sessionScope.loggedInUser}">
                         <button id="addJobBtn" class="nav-btn"
-                            onclick="window.location.href='${pageContext.request.contextPath}/jobs/add/${sessionScope.loggedInUser.email}'">
+                            onclick="window.location.href='${pageContext.request.contextPath}/jobs/add'">
                             <i data-lucide="plus-circle"></i>
                             Add Job
                         </button>
@@ -38,7 +38,7 @@
                     <c:if test="${not empty sessionScope.loggedInUser}">
                         <div class="profile">
                             <i data-lucide="user"></i>
-                            <span class="username">${sessionScope.loggedInUser.userName}</span>
+                            <span class="username">${sessionScope.loggedInUserName}</span>
                             <button id="logoutBtn" class="nav-btn logout" onclick="window.location.href='${pageContext.request.contextPath}/auth/logout'">
                                 <i data-lucide="log-out"></i>
                                 Logout
