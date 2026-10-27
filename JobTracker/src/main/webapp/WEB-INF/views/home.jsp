@@ -6,6 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" content="${_csrf.token}">
+    <meta name="_csrf_header" content="${_csrf.headerName}">
     <title>Job Application Tracker</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -27,7 +29,7 @@
                         Home
                     </button>
 
-                    <c:if test="${not empty sessionScope.loggedInUser}">
+                    <c:if test="${not empty sessionScope.loggedInUserId}">
                         <button id="addJobBtn" class="nav-btn"
                             onclick="window.location.href='${pageContext.request.contextPath}/jobs/add'">
                             <i data-lucide="plus-circle"></i>
@@ -35,7 +37,7 @@
                         </button>
                     </c:if>
 
-                    <c:if test="${not empty sessionScope.loggedInUser}">
+                    <c:if test="${not empty sessionScope.loggedInUserId}">
                         <div class="profile">
                             <i data-lucide="user"></i>
                             <span class="username">${sessionScope.loggedInUserName}</span>
@@ -46,7 +48,7 @@
                         </div>
                     </c:if>
 
-                    <c:if test="${empty sessionScope.loggedInUser}">
+                    <c:if test="${empty sessionScope.loggedInUserId}">
                         <button id="loginBtn" class="nav-btn login" onclick="window.location.href='${pageContext.request.contextPath}/auth/login'">
                             <i data-lucide="log-in"></i>
                             Login
