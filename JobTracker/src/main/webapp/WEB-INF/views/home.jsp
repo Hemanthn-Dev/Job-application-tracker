@@ -6,6 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" content="${_csrf.token}">
+    <meta name="_csrf_header" content="${_csrf.headerName}">
     <title>Job Application Tracker</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -27,26 +29,29 @@
                         Home
                     </button>
 
-                    <c:if test="${not empty sessionScope.loggedInUser}">
+                    <c:if test="${not empty sessionScope.loggedInUserId}">
                         <button id="addJobBtn" class="nav-btn"
-                            onclick="window.location.href='${pageContext.request.contextPath}/jobs/add/${sessionScope.loggedInUser.email}'">
+                            onclick="window.location.href='${pageContext.request.contextPath}/jobs/add'">
                             <i data-lucide="plus-circle"></i>
                             Add Job
                         </button>
                     </c:if>
 
-                    <c:if test="${not empty sessionScope.loggedInUser}">
+                    <c:if test="${not empty sessionScope.loggedInUserId}">
                         <div class="profile">
                             <i data-lucide="user"></i>
-                            <span class="username">${sessionScope.loggedInUser.userName}</span>
-                            <button id="logoutBtn" class="nav-btn logout" onclick="window.location.href='${pageContext.request.contextPath}/auth/logout'">
-                                <i data-lucide="log-out"></i>
-                                Logout
-                            </button>
+                            <span class="username">${sessionScope.loggedInUserName}</span>
+                            <form action="${pageContext.request.contextPath}/auth/logout" method="post" style="display:inline;">
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+                                <button id="logoutBtn" type="submit" class="nav-btn logout">
+                                    <i data-lucide="log-out"></i>
+                                    Logout
+                                </button>
+                            </form>
                         </div>
                     </c:if>
 
-                    <c:if test="${empty sessionScope.loggedInUser}">
+                    <c:if test="${empty sessionScope.loggedInUserId}">
                         <button id="loginBtn" class="nav-btn login" onclick="window.location.href='${pageContext.request.contextPath}/auth/login'">
                             <i data-lucide="log-in"></i>
                             Login
@@ -117,7 +122,11 @@
         function confirmDelete(jobId) {
             if (confirm("Are you sure you want to delete this job application?")) {
                 fetch("${pageContext.request.contextPath}/jobs/" + jobId, {
-                    method: "DELETE"
+                    method: "DELETE",
+                    headers: {
+                        [document.querySelector('meta[name="_csrf_header"]').content]:
+                            document.querySelector('meta[name="_csrf"]').content
+                    }
                 }).then(response => {
                     if (response.ok) {
                         alert("Job deleted successfully!");

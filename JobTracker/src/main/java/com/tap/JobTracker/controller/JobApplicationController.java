@@ -5,7 +5,6 @@ import com.tap.JobTracker.model.User;
 import com.tap.JobTracker.service.JobApplicationService;
 import com.tap.JobTracker.service.UserService;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,103 +12,114 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/jobs")
 public class JobApplicationController {
+    private final JobApplicationService jobService;
+    private final UserService userService;
 
-    @Autowired
-    private JobApplicationService jobService;
-
-    @Autowired
-    private UserService userService;
-
-    // ✅ Show all jobs for the logged-in user
-    @GetMapping
-    public String getJobs(HttpSession session, Model model) {
-        String email = (String) session.getAttribute("userEmail");
-
-        if (email != null) {
-            Optional<User> user = userService.findByEmail(email);
-            if (user.isPresent()) {
-                List<JobApplication> jobs = jobService.getAllJobs(user.get());
-                model.addAttribute("jobs", jobs);
-                model.addAttribute("loggedIn", true);
-                return "home"; // ✅ Show home page with jobs
-            }
-        }
-
-        model.addAttribute("loggedIn", false);
-        return "home"; // ✅ Show home but without jobs
+    public JobApplicationController(JobApplicationService jobService, UserService userService) {
+        this.jobService = jobService;
+        this.userService = userService;
     }
 
-    // ✅ Show the add job form
-    @GetMapping("/add/{email}")
-    public String showAddJobForm(@PathVariable String email, Model model) {
+    @GetMapping
+    public String getJobs(HttpSession session, Model model) {
+        Optional<User> user = currentUser(session);
+        if (user.isEmpty()) return "redirect:/auth/login";
+        model.addAttribute("jobs", jobService.getAllJobs(user.get()));
+        return "home";
+    }
+
+    @GetMapping("/add")
+    public String showAddJobForm(HttpSession session, Model model) {
+        if (currentUser(session).isEmpty()) return "redirect:/auth/login";
         model.addAttribute("job", new JobApplication());
-        model.addAttribute("email", email);
         return "addJob";
     }
 
-    // ✅ Add Job and Redirect to Home Page
     @PostMapping("/add")
-    public String addJob(@RequestParam String email, @ModelAttribute JobApplication job, HttpSession session) {
-        Optional<User> user = userService.findByEmail(email);
-
-        if (user.isPresent()) {
-            job.setUser(user.get());
-            jobService.addJob(job);
-            session.setAttribute("userEmail", email);
+    public String addJob(@ModelAttribute JobApplication job, HttpSession session, Model model) {
+        Optional<User> user = currentUser(session);
+        if (user.isEmpty()) return "redirect:/auth/login";
+        if (!validJob(job)) {
+            model.addAttribute("error", "Company, position and status are required.");
+            model.addAttribute("job", job);
+            return "addJob";
         }
-
-        return "redirect:/home"; // ✅ Always go back to home
+        job.setId(null);
+        job.setCompany(job.getCompany().trim());
+        job.setPosition(job.getPosition().trim());
+        job.setStatus(job.getStatus().trim().toLowerCase(Locale.ROOT));
+        job.setUser(user.get());
+        jobService.addJob(job);
+        return "redirect:/home";
     }
 
-    // ✅ Show the edit job form
     @GetMapping("/edit/{id}")
-    public String showEditJobForm(@PathVariable Long id, Model model) {
+    public String showEditJobForm(@PathVariable Long id, HttpSession session, Model model) {
+        Optional<User> user = currentUser(session);
+        if (user.isEmpty()) return "redirect:/auth/login";
         Optional<JobApplication> job = jobService.getJobById(id);
-        if (job.isPresent()) {
-            model.addAttribute("job", job.get());
+        if (job.isEmpty() || !ownsJob(job.get(), user.get())) return "redirect:/home";
+        model.addAttribute("job", job.get());
+        return "editJob";
+    }
+
+    @PostMapping("/update/{id}")
+    public String updateJob(@PathVariable Long id, @ModelAttribute JobApplication submitted,
+                            HttpSession session, Model model) {
+        Optional<User> user = currentUser(session);
+        if (user.isEmpty()) return "redirect:/auth/login";
+        Optional<JobApplication> existing = jobService.getJobById(id);
+        if (existing.isEmpty() || !ownsJob(existing.get(), user.get())) return "redirect:/home";
+        if (!validJob(submitted)) {
+            model.addAttribute("error", "Company, position and status are required.");
+            model.addAttribute("job", existing.get());
             return "editJob";
         }
-        model.addAttribute("error", "Job not found");
-        return "error";
+        JobApplication saved = existing.get();
+        saved.setCompany(submitted.getCompany().trim());
+        saved.setPosition(submitted.getPosition().trim());
+        saved.setStatus(submitted.getStatus().trim().toLowerCase(Locale.ROOT));
+        saved.setAppliedDate(submitted.getAppliedDate());
+        jobService.addJob(saved);
+        return "redirect:/home";
     }
 
-    // ✅ Update an existing job
-    @PostMapping("/update/{id}")
-    public String updateJob(@PathVariable Long id, @ModelAttribute JobApplication job, HttpSession session, Model model) {
-        Optional<JobApplication> updatedJob = jobService.updateJob(id, job);
-        if (updatedJob.isPresent()) {
-            return "redirect:/home"; // ✅ Redirect to home page
-        }
-        model.addAttribute("error", "Job not found");
-        return "error";
-    }
-
-    // ✅ Delete a job (GET Mapping)
-    @GetMapping("/delete/{id}")
-    public String deleteJob(@PathVariable Long id, HttpSession session, Model model) {
-        Optional<JobApplication> job = jobService.getJobById(id);
-        if (job.isPresent()) {
-            jobService.deleteJob(id);
-            return "redirect:/home"; // ✅ Redirect to home page
-        }
-        model.addAttribute("error", "Job not found");
-        return "error";
-    }
-
-    // ✅ Delete a job (RESTful DELETE API)
     @DeleteMapping("/{id}")
     @ResponseBody
-    public ResponseEntity<String> deleteJobApi(@PathVariable Long id) {
+    public ResponseEntity<String> deleteJobApi(@PathVariable Long id, HttpSession session) {
+        Optional<User> user = currentUser(session);
+        if (user.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
         Optional<JobApplication> job = jobService.getJobById(id);
-        if (job.isPresent()) {
-            jobService.deleteJob(id);
-            return ResponseEntity.ok("Job deleted successfully");
+        if (job.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Job not found.");
+        if (!ownsJob(job.get(), user.get())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You cannot delete this job.");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Job not found");
+        jobService.deleteJob(id);
+        return ResponseEntity.ok("Job deleted successfully.");
+    }
+
+    private Optional<User> currentUser(HttpSession session) {
+        Object value = session.getAttribute("loggedInUserId");
+        if (!(value instanceof Long userId)) return Optional.empty();
+        return userService.findById(userId);
+    }
+
+    private boolean ownsJob(JobApplication job, User user) {
+        return job.getUser() != null && job.getUser().getId() != null
+                && job.getUser().getId().equals(user.getId());
+    }
+
+    private boolean validJob(JobApplication job) {
+        return job.getCompany() != null && !job.getCompany().isBlank()
+                && job.getPosition() != null && !job.getPosition().isBlank()
+                && job.getStatus() != null
+                && List.of("applied", "interviewing", "rejected", "offer")
+                    .contains(job.getStatus().trim().toLowerCase(Locale.ROOT));
     }
 }

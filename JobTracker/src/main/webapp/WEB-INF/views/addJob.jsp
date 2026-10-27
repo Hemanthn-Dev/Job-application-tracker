@@ -5,79 +5,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${job.id == null ? "Add Job" : "Edit Job"}</title>
-
-    <!-- ✅ Link CSS -->
+    <title>Add Job | Job Tracker</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <!-- ✅ Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- ✅ JavaScript -->
-    <script>
-        function cancelForm() {
-            window.location.href = "${pageContext.request.contextPath}/home";
-        }
-    </script>
-
-    <style>
-        .hidden { display: none; }
-    </style>
 </head>
 <body>
-
-    <!-- ✅ Job Application Form -->
-    <div id="jobFormView">
+    <main class="container">
         <div class="form-container">
-            <h2>${job.id == null ? "Add New Job Application" : "Edit Job Application"}</h2>
-
-            <!-- ✅ Form dynamically changes action (Add or Update) -->
-            <form id="jobForm"
-                  action="${pageContext.request.contextPath}/jobs/${job.id == null ? 'add' : 'update'}"
-                  method="post">
-
-                <!-- ✅ Hidden input for ID when updating -->
-                <c:if test="${job.id != null}">
-                    <input type="hidden" name="id" value="${job.id}">
-                </c:if>
-
-                <input type="hidden" name="email" value="${email}">
-
+            <h2>Add New Job Application</h2>
+            <c:if test="${not empty error}"><p role="alert">${error}</p></c:if>
+            <form id="jobForm" action="${pageContext.request.contextPath}/jobs/add" method="post">
+                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
                 <div class="form-group">
-                    <label>Company Name</label>
-                    <input type="text" name="company" value="${job.company}" placeholder="Enter company name" required>
+                    <label for="company">Company Name</label>
+                    <input id="company" type="text" name="company" value="${job.company}" maxlength="150" required>
                 </div>
-
                 <div class="form-group">
-                    <label>Position</label>
-                    <input type="text" name="position" value="${job.position}" placeholder="Enter position" required>
+                    <label for="position">Position</label>
+                    <input id="position" type="text" name="position" value="${job.position}" maxlength="150" required>
                 </div>
-
                 <div class="form-group">
-                    <label>Status</label>
-                    <select name="status">
-                        <option value="applied" ${job.status == 'applied' ? 'selected' : ''}>Applied</option>
-                        <option value="interviewing" ${job.status == 'interviewing' ? 'selected' : ''}>Interviewing</option>
-                        <option value="rejected" ${job.status == 'rejected' ? 'selected' : ''}>Rejected</option>
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required>
+                        <option value="applied">Applied</option>
+                        <option value="interviewing">Interviewing</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="offer">Offer</option>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label>Applied Date</label>
-                    <input type="date" name="appliedDate" value="${job.appliedDate}" required>
+                    <label for="appliedDate">Applied Date</label>
+                    <input id="appliedDate" type="date" name="appliedDate" value="${job.appliedDate}">
                 </div>
-
-                <div class="form-group">
-                    <label>Notes</label>
-                    <textarea name="notes" rows="3" placeholder="Enter notes"></textarea>
-                </div>
-
                 <div class="form-buttons">
-                    <button type="button" class="btn-secondary" onclick="cancelForm()">Cancel</button>
-                    <button type="submit" class="btn-primary">${job.id == null ? "Save Application" : "Update Job"}</button>
+                    <button type="button" onclick="window.location.href='${pageContext.request.contextPath}/home'">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Application</button>
                 </div>
             </form>
         </div>
-    </div>
-
+    </main>
 </body>
 </html>
