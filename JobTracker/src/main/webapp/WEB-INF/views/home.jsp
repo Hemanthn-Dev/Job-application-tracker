@@ -122,7 +122,11 @@
         function confirmDelete(jobId) {
             if (confirm("Are you sure you want to delete this job application?")) {
                 fetch("${pageContext.request.contextPath}/jobs/" + jobId, {
-                    method: "DELETE"
+                    method: "DELETE",
+                    headers: {
+                        [document.querySelector('meta[name="_csrf_header"]').content]:
+                            document.querySelector('meta[name="_csrf"]').content
+                    }
                 }).then(response => {
                     if (response.ok) {
                         alert("Job deleted successfully!");
