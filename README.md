@@ -74,7 +74,7 @@ A Spring Boot, JSP and MySQL web application for keeping track of job applicatio
 - Existing accounts with legacy plain-text passwords are upgraded to BCrypt after a successful login.
 - Job records are read, edited and deleted only after verifying they belong to the signed-in user.
 - Configure database credentials through environment variables. Rotate credentials that were previously exposed in Git history.
-- This is a learning project. Before public deployment, add CSRF protection, login rate limiting, HTTPS, and automated security tests.
+- This is a learning project. Before public deployment, add login rate limiting, HTTPS, and automated security tests.
 
 ## Screenshots
 
