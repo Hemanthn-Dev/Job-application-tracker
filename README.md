@@ -24,6 +24,7 @@ A Spring Boot, JSP and MySQL web application for keeping track of job applicatio
 - JDK 17
 - MySQL 8+
 - Git
+- Maven 3.9+
 
 ## Run locally
 
@@ -78,4 +79,6 @@ A Spring Boot, JSP and MySQL web application for keeping track of job applicatio
 
 ## Screenshots
 
-Add screenshots here after confirming they match the current UI.
+<img width="1360" height="728" alt="Job Tracker dashboard" src="https://github.com/user-attachments/assets/1cb30400-619a-42ce-9591-f3eb0bf48a6e" />
+<img width="1360" height="728" alt="Job Tracker applications" src="https://github.com/user-attachments/assets/e20c00e1-1427-4211-b7b3-625e52f5fb98" />
+<img width="1360" height="728" alt="Job Tracker application details" src="https://github.com/user-attachments/assets/5d520227-4459-4271-b82e-efe070003418" />
