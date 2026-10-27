@@ -50,7 +50,7 @@
             </c:if>
 
             <div class="auth-footer">
-                <p>Don't have an account? <a href="<%= request.getContextPath() %>/register" class="text-link">Create Account</a></p>
+                <p>Don't have an account? <a href="<%= request.getContextPath() %>/auth/register" class="text-link">Create Account</a></p>
             </div>
         </div>
     </div>
